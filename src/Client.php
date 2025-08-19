@@ -69,6 +69,13 @@ class Client
         $handlerStack = $config['handler'] ?? HandlerStack::create();
         $handlerStack->push(Middleware::retry($this->createRetryDecider(), $this->createRetryDelay()));
 
+        // Add request mapping middleware for headers
+        $handlerStack->push(Middleware::mapRequest(
+            function (RequestInterface $request) {
+                return $this->addRequestHeaders($request);
+            },
+        ));
+
         $this->client = new GuzzleClient([
             'base_uri' => $this->apiUrl,
             'handler' => $handlerStack,
@@ -106,6 +113,27 @@ class Client
         return function (int $numberOfRetries): int {
             return 1000 * (2 ** $numberOfRetries);
         };
+    }
+
+    /**
+     * Add request headers with selective authentication
+     */
+    private function addRequestHeaders(RequestInterface $request): RequestInterface
+    {
+        $path = $request->getUri()->getPath();
+
+        // Start with base headers that all requests need
+        $baseRequest = $request
+            ->withHeader('User-Agent', $this->userAgent)
+            ->withHeader('Content-Type', 'application/json');
+
+        // Skip authentication for health-check endpoints
+        if (str_contains($path, '/health-check')) {
+            return $baseRequest;
+        }
+
+        // Add Storage API token for all other endpoints that require authentication
+        return $baseRequest->withHeader('X-StorageAPI-Token', $this->tokenString);
     }
 
     /**
@@ -170,15 +198,7 @@ class Client
      */
     private function sendRequest(string $method, string $url, ?array $requestBody = null): array
     {
-        $headers = [
-            'Content-Type' => 'application/json',
-            'X-StorageAPI-Token' => $this->tokenString,
-            'User-Agent' => $this->userAgent,
-        ];
-
-        $options = [
-            'headers' => $headers,
-        ];
+        $options = [];
 
         if ($requestBody !== null) {
             try {

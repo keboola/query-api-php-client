@@ -133,6 +133,33 @@ class ClientTest extends TestCase
         $this->assertInstanceOf(Client::class, $client);
     }
 
+    public function testHealthCheckWithInvalidToken(): void
+    {
+        // Health check should work even with invalid token since no auth is required
+        $mockHandler = new MockHandler([
+            new Response(200, [], json_encode([
+                'service' => 'query',
+                'status' => 'ok',
+                'timestamp' => '2024-01-01T00:00:00Z',
+                'version' => '1.0.0',
+            ]) ?: ''),
+        ]);
+
+        // Create client with completely invalid token
+        $handlerStack = HandlerStack::create($mockHandler);
+        $client = new Client([
+            'url' => 'https://query.test.keboola.com',
+            'token' => 'completely-invalid-token-that-would-fail-auth',
+            'handler' => $handlerStack,
+        ]);
+
+        // Health check should succeed because no token is sent
+        $result = $client->healthCheck();
+
+        $this->assertEquals('query', $result['service']);
+        $this->assertEquals('ok', $result['status']);
+    }
+
     private function createClientWithMockHandler(MockHandler $mockHandler): Client
     {
         $handlerStack = HandlerStack::create($mockHandler);

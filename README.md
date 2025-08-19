@@ -49,11 +49,11 @@ The client constructor accepts the following configuration options:
 
 - `url` (required): Query Service API URL (e.g., `https://query.keboola.com`)
 - `token` (required): Storage API token
-- `storageApiUrl` (optional): Storage API URL (auto-derived from Query Service URL if not provided)
 - `backoffMaxTries` (optional): Number of retry attempts for failed requests (default: 3)
 - `userAgent` (optional): Additional user agent string to append
 - `handler` (optional): Custom Guzzle handler stack
-- `logger` (optional): PSR-3 logger instance
+
+**Note**: The `healthCheck()` endpoint does not require authentication and will work without a valid token.
 
 ## API Methods
 
@@ -67,7 +67,26 @@ The client constructor accepts the following configuration options:
 
 ### Running Tests
 
-Run tests:
+#### Unit Tests
+Run unit tests:
+```shell
+vendor/bin/phpunit tests/ClientTest.php
+```
+
+#### Functional Tests
+Functional tests require environment variables to be set:
+
+- `TESTS_STORAGE_API_TOKEN` - Storage API authentication token
+- `TESTS_QUERY_API_URL` - Query Service API endpoint URL  
+- `TESTS_STORAGE_API_URL` - Storage API endpoint URL
+
+Run functional tests:
+```shell
+vendor/bin/phpunit tests/Functional/
+```
+
+#### All Tests
+Run all tests:
 ```shell
 composer run tests
 ```

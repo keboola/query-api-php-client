@@ -4,7 +4,7 @@ PHP client for Keboola Query Service API.
 
 ## Installation
 
-```bash
+```shell
 composer require keboola/query-api-php-client
 ```
 
@@ -36,57 +36,65 @@ $results = $client->getJobResults($queryJobId, $statementId);
 
 // Cancel job
 $client->cancelJob($queryJobId, ['reason' => 'User requested cancellation']);
+
+// Health check
+$health = $client->healthCheck();
 ```
+
+## Configuration Options
+
+The client constructor accepts the following configuration options:
+
+- `url` (required): Query Service API URL (e.g., `https://query.keboola.com`)
+- `token` (required): Storage API token
+- `storageApiUrl` (optional): Storage API URL (auto-derived from Query Service URL if not provided)
+- `backoffMaxTries` (optional): Number of retry attempts for failed requests (default: 3)
+- `userAgent` (optional): Additional user agent string to append
+- `handler` (optional): Custom Guzzle handler stack
+- `logger` (optional): PSR-3 logger instance
+
+## API Methods
+
+- `submitQueryJob(string $branchId, string $workspaceId, array $requestBody): array`
+- `getJobStatus(string $queryJobId): array`
+- `getJobResults(string $queryJobId, string $statementId): array`
+- `cancelJob(string $queryJobId, array $requestBody = []): array`
+- `healthCheck(): array`
+- `getStorageApiClient(): StorageApiClient`
 
 ## Development
 
+### Requirements
+
+- PHP 7.4+
+- ext-json
+- Composer
+
 ### Running Tests
 
-Run unit tests:
-```bash
-composer tests
+Run tests:
+```shell
+composer run tests
 ```
-
-Run functional tests (requires .env file with test configuration):
-```bash
-composer tests-functional
-```
-
-Run all tests:
-```bash
-composer tests-all
-```
-
-### Functional Tests Setup
-
-For functional tests, copy `.env.example` to `.env` and configure:
-
-```bash
-cp .env.example .env
-```
-
-Then edit `.env` with your test environment settings:
-
-```env
-TESTS_HOSTNAME_SUFFIX=.keboola.com
-TESTS_STORAGE_API_TOKEN=your-storage-api-token
-```
-
-**Note**: Functional tests will create and delete temporary branches and workspaces in your Keboola project. Make sure to use a development/test project with appropriate permissions.
 
 ### Code Quality
 
 Run code style check:
-```bash
-composer phpcs
+```shell
+composer run phpcs
+```
+
+Fix code style issues:
+```shell
+composer run phpcbf
 ```
 
 Run static analysis:
-```bash
-composer phpstan
+```shell
+composer run phpstan
 ```
 
-Run all CI checks:
-```bash
-composer ci
+Run all CI checks. Check [Github Workflows](./.github/workflows) for more details
+```shell
+composer run ci
 ```

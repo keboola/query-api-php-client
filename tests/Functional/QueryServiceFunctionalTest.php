@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\QueryApi\Tests\Functional;
 
+use Keboola\QueryApi\Client;
 use Keboola\QueryApi\ClientException;
 
 class QueryServiceFunctionalTest extends BaseFunctionalTestCase
@@ -291,5 +292,26 @@ class QueryServiceFunctionalTest extends BaseFunctionalTestCase
         $this->expectException(ClientException::class);
 
         $this->queryClient->cancelJob('non-existent-job-12345', ['reason' => 'Test']);
+    }
+
+    public function testInvalidStorageToken(): void
+    {
+        // Create a client with an invalid storage token
+        $invalidTokenClient = new Client([
+            'url' => $_ENV['TESTS_QUERY_API_URL'],
+            'token' => 'invalid-token-12345',
+        ]);
+
+        $this->expectException(ClientException::class);
+        $this->expectExceptionMessage('Authentication failed');
+
+        // Attempt to submit a query job with invalid token
+        $invalidTokenClient->submitQueryJob(
+            $this->getTestBranchId(),
+            $this->getTestWorkspaceId(),
+            [
+                'statements' => ['SELECT 1'],
+            ],
+        );
     }
 }

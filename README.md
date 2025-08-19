@@ -63,12 +63,6 @@ The client constructor accepts the following configuration options:
 
 ## Development
 
-### Requirements
-
-- PHP 7.4+
-- ext-json
-- Composer
-
 ### Running Tests
 
 Run tests:

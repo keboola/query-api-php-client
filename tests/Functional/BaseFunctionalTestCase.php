@@ -53,7 +53,7 @@ abstract class BaseFunctionalTestCase extends TestCase
 
         foreach ($requiredVars as $var) {
             if (empty($_ENV[$var])) {
-                $this->markTestSkipped(
+                throw new RuntimeException(
                     sprintf('Environment variable %s is required for functional tests', $var),
                 );
             }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Keboola\QueryApi\Tests\Functional;
 
-use InvalidArgumentException;
 use Keboola\QueryApi\Client;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client as StorageApiClient;
@@ -115,8 +114,6 @@ abstract class BaseFunctionalTestCase extends TestCase
 
         $this->testWorkspaceId = (string) $workspaceData['id'];
     }
-
-
 
     protected function getTestBranchId(): string
     {

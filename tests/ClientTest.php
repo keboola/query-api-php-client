@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Keboola\QueryApi\Tests;
 
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\ClientException as GuzzleClientException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use InvalidArgumentException;
 use Keboola\QueryApi\Client;
-use Keboola\QueryApi\ClientException;
 use PHPUnit\Framework\TestCase;
 
 class ClientTest extends TestCase
@@ -120,17 +117,6 @@ class ClientTest extends TestCase
 
         $this->assertEquals('query', $result['service']);
         $this->assertEquals('ok', $result['status']);
-    }
-
-    public function testStorageApiUrlDerivation(): void
-    {
-        // Test with Query Service URL to ensure proper Storage API URL derivation
-        $client = new Client([
-            'url' => 'https://query.keboola.com',
-            'token' => 'test-token',
-        ]);
-
-        $this->assertInstanceOf(Client::class, $client);
     }
 
     public function testHealthCheckWithInvalidToken(): void

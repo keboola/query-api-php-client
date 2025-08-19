@@ -1,5 +1,7 @@
 # Keboola Query Service API PHP Client
 
+[![Build](https://github.com/keboola/query-api-php-client/actions/workflows/branch.yml/badge.svg)](https://github.com/keboola/query-api-php-client/actions/workflows/branch.yml)
+
 PHP client for Keboola Query Service API.
 
 ## Installation

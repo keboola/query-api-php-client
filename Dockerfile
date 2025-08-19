@@ -1,4 +1,4 @@
-FROM php:8.2
+FROM php:8.4
 
 ENV COMPOSER_ALLOW_SUPERUSER 1
 ARG COMPOSER_FLAGS="--prefer-dist --no-interaction --classmap-authoritative --no-scripts"

@@ -38,8 +38,8 @@ class BasicQueryTest extends BaseFunctionalTestCase
         $this->assertEquals('completed', $statement['status']);
 
         // Get job results
-        $this->assertArrayHasKey('statementId', $statement);
-        $results = $this->queryClient->getJobResults($queryJobId, $statement['statementId']);
+        $this->assertArrayHasKey('id', $statement);
+        $results = $this->queryClient->getJobResults($queryJobId, $statement['id']);
 
         $this->assertArrayHasKey('status', $results);
         $this->assertEquals('completed', $results['status']);
@@ -94,8 +94,8 @@ class BasicQueryTest extends BaseFunctionalTestCase
         $this->assertEquals('completed', $statement['status']);
 
         // Get job results
-        $this->assertArrayHasKey('statementId', $statement);
-        $results = $this->queryClient->getJobResults($queryJobId, $statement['statementId']);
+        $this->assertArrayHasKey('id', $statement);
+        $results = $this->queryClient->getJobResults($queryJobId, $statement['id']);
 
         $this->assertArrayHasKey('status', $results);
         $this->assertEquals('completed', $results['status']);

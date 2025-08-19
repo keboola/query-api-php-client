@@ -56,8 +56,8 @@ class QueryServiceFunctionalTest extends BaseFunctionalTestCase
         $this->assertEquals('completed', $statement['status']);
 
         // Get job results
-        $this->assertArrayHasKey('statementId', $statement);
-        $results = $this->queryClient->getJobResults($queryJobId, $statement['statementId']);
+        $this->assertArrayHasKey('id', $statement);
+        $results = $this->queryClient->getJobResults($queryJobId, $statement['id']);
 
         $this->assertArrayHasKey('data', $results);
         $this->assertArrayHasKey('status', $results);
@@ -114,8 +114,8 @@ class QueryServiceFunctionalTest extends BaseFunctionalTestCase
         assert(is_array($selectStatement));
         $this->assertEquals('completed', $selectStatement['status']);
 
-        $this->assertArrayHasKey('statementId', $selectStatement);
-        $results = $this->queryClient->getJobResults($queryJobId, $selectStatement['statementId']);
+        $this->assertArrayHasKey('id', $selectStatement);
+        $results = $this->queryClient->getJobResults($queryJobId, $selectStatement['id']);
         $this->assertArrayHasKey('data', $results);
         $data = $results['data'];
         assert(is_array($data));

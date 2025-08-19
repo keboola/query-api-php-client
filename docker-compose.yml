@@ -9,4 +9,4 @@ services:
     environment:
       - TESTS_QUERY_API_URL
       - TESTS_STORAGE_API_TOKEN
-      - TESTS_QUERY_API_URL_OVERRIDE
+      - TESTS_STORAGE_API_URL

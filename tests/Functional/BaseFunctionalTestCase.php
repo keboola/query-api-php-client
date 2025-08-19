@@ -49,7 +49,7 @@ abstract class BaseFunctionalTestCase extends TestCase
 
     private function validateEnvironmentVariables(): void
     {
-        $requiredVars = ['TESTS_STORAGE_API_TOKEN', 'TESTS_QUERY_API_URL'];
+        $requiredVars = ['TESTS_STORAGE_API_TOKEN', 'TESTS_QUERY_API_URL', 'TESTS_STORAGE_API_URL'];
 
         foreach ($requiredVars as $var) {
             if (empty($_ENV[$var])) {
@@ -64,6 +64,7 @@ abstract class BaseFunctionalTestCase extends TestCase
     {
         $storageApiToken = $_ENV['TESTS_STORAGE_API_TOKEN'];
         $queryApiUrl = $_ENV['TESTS_QUERY_API_URL'];
+        $storageApiUrl = $_ENV['TESTS_STORAGE_API_URL'];
 
         $this->queryClient = new Client([
             'url' => $queryApiUrl,
@@ -71,33 +72,10 @@ abstract class BaseFunctionalTestCase extends TestCase
         ]);
 
         // Create Storage API client directly for tests
-        $storageApiUrl = $this->deriveStorageApiUrl($queryApiUrl);
         $this->storageApiClient = new StorageApiClient([
             'url' => $storageApiUrl,
             'token' => $storageApiToken,
         ]);
-    }
-
-    private function deriveStorageApiUrl(string $queryApiUrl): string
-    {
-        // Convert Query Service URL to Storage API URL
-        // e.g., https://query.keboola.com -> https://connection.keboola.com
-        // e.g., https://query.eu-central-1.keboola.com -> https://connection.eu-central-1.keboola.com
-        $parsedUrl = parse_url($queryApiUrl);
-        if ($parsedUrl === false) {
-            throw new InvalidArgumentException('Invalid Query Service URL');
-        }
-
-        $scheme = $parsedUrl['scheme'] ?? 'https';
-        $host = $parsedUrl['host'] ?? '';
-        $port = isset($parsedUrl['port']) ? ':' . $parsedUrl['port'] : '';
-
-        // Replace 'query.' with 'connection.' for Storage API
-        if (str_starts_with($host, 'query.')) {
-            $host = str_replace('query.', 'connection.', $host);
-        }
-
-        return sprintf('%s://%s%s', $scheme, $host, $port);
     }
 
     private function findDefaultBranch(): void

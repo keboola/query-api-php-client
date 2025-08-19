@@ -58,12 +58,6 @@ class Client
             $this->userAgent .= ' ' . $config['userAgent'];
         }
 
-        // Allow override of Query API URL via environment variable for functional testing
-        // This is specifically for overriding in functional tests when needed
-        if (!empty($_ENV['TESTS_QUERY_API_URL_OVERRIDE'])) {
-            $this->apiUrl = rtrim($_ENV['TESTS_QUERY_API_URL_OVERRIDE'], '/');
-        }
-
         $this->initClient($config);
     }
 

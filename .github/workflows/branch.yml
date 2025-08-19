@@ -24,4 +24,5 @@ jobs:
           docker compose run --rm \
             -e TESTS_QUERY_API_URL=${{ vars.TESTS_QUERY_API_URL }} \
             -e TESTS_STORAGE_API_TOKEN=${{ secrets.TESTS_STORAGE_API_TOKEN }} \
+            -e TESTS_STORAGE_API_URL=${{ vars.TESTS_STORAGE_API_URL }} \
             dev composer ci

@@ -12,10 +12,7 @@ use GuzzleHttp\Psr7\Response;
 use InvalidArgumentException;
 use Keboola\QueryApi\Client;
 use Keboola\QueryApi\ClientException;
-use Keboola\StorageApi\Client as StorageApiClient;
-use Keboola\StorageApi\ClientException as StorageApiClientException;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
 
 class ClientTest extends TestCase
 {
@@ -45,10 +42,7 @@ class ClientTest extends TestCase
             new Response(201, [], json_encode(['queryJobId' => 'job-12345']) ?: ''),
         ]);
 
-        $storageApiClient = $this->createMock(StorageApiClient::class);
-        $storageApiClient->expects($this->once())->method('verifyToken');
-
-        $client = $this->createClientWithMockHandler($mockHandler, $storageApiClient);
+        $client = $this->createClientWithMockHandler($mockHandler);
 
         $result = $client->submitQueryJob('main', 'workspace-123', [
             'statements' => ['SELECT * FROM table1'],
@@ -68,10 +62,7 @@ class ClientTest extends TestCase
             ]) ?: ''),
         ]);
 
-        $storageApiClient = $this->createMock(StorageApiClient::class);
-        $storageApiClient->expects($this->once())->method('verifyToken');
-
-        $client = $this->createClientWithMockHandler($mockHandler, $storageApiClient);
+        $client = $this->createClientWithMockHandler($mockHandler);
 
         $result = $client->getJobStatus('job-12345');
 
@@ -85,10 +76,7 @@ class ClientTest extends TestCase
             new Response(200, [], json_encode(['queryJobId' => 'job-12345']) ?: ''),
         ]);
 
-        $storageApiClient = $this->createMock(StorageApiClient::class);
-        $storageApiClient->expects($this->once())->method('verifyToken');
-
-        $client = $this->createClientWithMockHandler($mockHandler, $storageApiClient);
+        $client = $this->createClientWithMockHandler($mockHandler);
 
         $result = $client->cancelJob('job-12345', ['reason' => 'User requested']);
 
@@ -105,10 +93,7 @@ class ClientTest extends TestCase
             ]) ?: ''),
         ]);
 
-        $storageApiClient = $this->createMock(StorageApiClient::class);
-        $storageApiClient->expects($this->once())->method('verifyToken');
-
-        $client = $this->createClientWithMockHandler($mockHandler, $storageApiClient);
+        $client = $this->createClientWithMockHandler($mockHandler);
 
         $result = $client->getJobResults('job-12345', 'stmt-67890');
 
@@ -129,35 +114,12 @@ class ClientTest extends TestCase
             ]) ?: ''),
         ]);
 
-        $storageApiClient = $this->createMock(StorageApiClient::class);
-        // Health check should NOT verify token
-        $storageApiClient->expects($this->never())->method('verifyToken');
-
-        $client = $this->createClientWithMockHandler($mockHandler, $storageApiClient);
+        $client = $this->createClientWithMockHandler($mockHandler);
 
         $result = $client->healthCheck();
 
         $this->assertEquals('query', $result['service']);
         $this->assertEquals('ok', $result['status']);
-    }
-
-    public function testStorageApiTokenVerificationFailure(): void
-    {
-        $mockHandler = new MockHandler([]);
-
-        $storageApiClient = $this->createMock(StorageApiClient::class);
-        $storageApiClient->expects($this->once())
-            ->method('verifyToken')
-            ->willThrowException(new StorageApiClientException('Invalid token'));
-
-        $client = $this->createClientWithMockHandler($mockHandler, $storageApiClient);
-
-        $this->expectException(ClientException::class);
-        $this->expectExceptionMessage('Storage API token verification failed: Invalid token');
-
-        $client->submitQueryJob('main', 'workspace-123', [
-            'statements' => ['SELECT * FROM table1'],
-        ]);
     }
 
     public function testStorageApiUrlDerivation(): void
@@ -168,32 +130,12 @@ class ClientTest extends TestCase
             'token' => 'test-token',
         ]);
 
-        // Since we can't easily mock the StorageApiClient constructor,
-        // we'll just verify the client can be created without errors
         $this->assertInstanceOf(Client::class, $client);
     }
 
-    private function createClientWithMockHandler(
-        MockHandler $mockHandler,
-        ?StorageApiClient $storageApiClient = null,
-    ): Client {
+    private function createClientWithMockHandler(MockHandler $mockHandler): Client
+    {
         $handlerStack = HandlerStack::create($mockHandler);
-
-        if ($storageApiClient) {
-            // Use reflection to inject the mocked Storage API client
-            $client = new Client([
-                'url' => 'https://query.test.keboola.com',
-                'token' => 'test-token',
-                'handler' => $handlerStack,
-            ]);
-
-            $reflection = new ReflectionClass($client);
-            $property = $reflection->getProperty('storageApiClient');
-            $property->setAccessible(true);
-            $property->setValue($client, $storageApiClient);
-
-            return $client;
-        }
 
         return new Client([
             'url' => 'https://query.test.keboola.com',

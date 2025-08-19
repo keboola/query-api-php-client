@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\QueryApi\Tests\Functional;
 
+use InvalidArgumentException;
 use Keboola\QueryApi\Client;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client as StorageApiClient;
@@ -69,8 +70,34 @@ abstract class BaseFunctionalTestCase extends TestCase
             'token' => $storageApiToken,
         ]);
 
-        // Get Storage API client from Query API client
-        $this->storageApiClient = $this->queryClient->getStorageApiClient();
+        // Create Storage API client directly for tests
+        $storageApiUrl = $this->deriveStorageApiUrl($queryApiUrl);
+        $this->storageApiClient = new StorageApiClient([
+            'url' => $storageApiUrl,
+            'token' => $storageApiToken,
+        ]);
+    }
+
+    private function deriveStorageApiUrl(string $queryApiUrl): string
+    {
+        // Convert Query Service URL to Storage API URL
+        // e.g., https://query.keboola.com -> https://connection.keboola.com
+        // e.g., https://query.eu-central-1.keboola.com -> https://connection.eu-central-1.keboola.com
+        $parsedUrl = parse_url($queryApiUrl);
+        if ($parsedUrl === false) {
+            throw new InvalidArgumentException('Invalid Query Service URL');
+        }
+
+        $scheme = $parsedUrl['scheme'] ?? 'https';
+        $host = $parsedUrl['host'] ?? '';
+        $port = isset($parsedUrl['port']) ? ':' . $parsedUrl['port'] : '';
+
+        // Replace 'query.' with 'connection.' for Storage API
+        if (str_starts_with($host, 'query.')) {
+            $host = str_replace('query.', 'connection.', $host);
+        }
+
+        return sprintf('%s://%s%s', $scheme, $host, $port);
     }
 
     private function findDefaultBranch(): void

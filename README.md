@@ -60,7 +60,6 @@ The client constructor accepts the following configuration options:
 - `getJobResults(string $queryJobId, string $statementId): array`
 - `cancelJob(string $queryJobId, array $requestBody = []): array`
 - `healthCheck(): array`
-- `getStorageApiClient(): StorageApiClient`
 
 ## Development
 

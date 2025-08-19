@@ -14,12 +14,8 @@ use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Request;
 use InvalidArgumentException;
 use JsonException;
-use Keboola\StorageApi\Client as StorageApiClient;
-use Keboola\StorageApi\ClientException as StorageApiClientException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Throwable;
 
 class Client
@@ -34,18 +30,14 @@ class Client
     private int $backoffMaxTries;
     private string $userAgent;
     private GuzzleClient $client;
-    private LoggerInterface $logger;
-    private StorageApiClient $storageApiClient;
 
     /**
      * @param array{
      *     url: string,
      *     token: string,
-     *     storageApiUrl?: string,
      *     backoffMaxTries?: int,
      *     userAgent?: string,
      *     handler?: HandlerStack,
-     *     logger?: LoggerInterface,
      * } $config
      */
     public function __construct(array $config)
@@ -61,13 +53,10 @@ class Client
         $this->tokenString = $config['token'];
         $this->backoffMaxTries = $config['backoffMaxTries'] ?? self::DEFAULT_BACKOFF_RETRIES;
         $this->userAgent = self::DEFAULT_USER_AGENT;
-        $this->logger = $config['logger'] ?? new NullLogger();
 
         if (isset($config['userAgent'])) {
             $this->userAgent .= ' ' . $config['userAgent'];
         }
-
-        $this->initStorageApiClient($config);
 
         // Allow override of Query API URL via environment variable for functional testing
         // This is specifically for overriding in functional tests when needed
@@ -126,58 +115,6 @@ class Client
     }
 
     /**
-     * @param array{storageApiUrl?: string, logger?: LoggerInterface} $config
-     */
-    private function initStorageApiClient(array $config): void
-    {
-        $storageApiUrl = $config['storageApiUrl'] ?? $this->deriveStorageApiUrl();
-
-        $this->storageApiClient = new StorageApiClient([
-            'url' => $storageApiUrl,
-            'token' => $this->tokenString,
-            'logger' => $this->logger,
-        ]);
-    }
-
-    private function deriveStorageApiUrl(): string
-    {
-        // Convert Query Service URL to Storage API URL
-        // e.g., https://query.keboola.com -> https://connection.keboola.com
-        // e.g., https://query.eu-central-1.keboola.com -> https://connection.eu-central-1.keboola.com
-        $parsedUrl = parse_url($this->apiUrl);
-        if ($parsedUrl === false) {
-            throw new InvalidArgumentException('Invalid Query Service URL');
-        }
-
-        $scheme = $parsedUrl['scheme'] ?? 'https';
-        $host = $parsedUrl['host'] ?? '';
-        $port = isset($parsedUrl['port']) ? ':' . $parsedUrl['port'] : '';
-
-        // Convert query.* subdomain to connection.* for Storage API
-        if (strpos($host, 'query.') === 0) {
-            $host = str_replace('query.', 'connection.', $host);
-        }
-
-        return sprintf('%s://%s%s', $scheme, $host, $port);
-    }
-
-    /**
-     * Verify Storage API token before making Query Service requests
-     */
-    private function verifyStorageApiToken(): void
-    {
-        try {
-            $this->storageApiClient->verifyToken();
-        } catch (StorageApiClientException $e) {
-            throw new ClientException(
-                'Storage API token verification failed: ' . $e->getMessage(),
-                $e->getCode(),
-                $e,
-            );
-        }
-    }
-
-    /**
      * Submit a new query job
      *
      * @param array{statements: string[], transactional?: bool} $requestBody
@@ -185,7 +122,6 @@ class Client
      */
     public function submitQueryJob(string $branchId, string $workspaceId, array $requestBody): array
     {
-        $this->verifyStorageApiToken();
         $url = sprintf('/api/v1/branches/%s/workspaces/%s/queries', $branchId, $workspaceId);
         return $this->sendRequest('POST', $url, $requestBody);
     }
@@ -197,7 +133,6 @@ class Client
      */
     public function getJobStatus(string $queryJobId): array
     {
-        $this->verifyStorageApiToken();
         $url = sprintf('/api/v1/queries/%s', $queryJobId);
         return $this->sendRequest('GET', $url);
     }
@@ -210,7 +145,6 @@ class Client
      */
     public function cancelJob(string $queryJobId, array $requestBody = []): array
     {
-        $this->verifyStorageApiToken();
         $url = sprintf('/api/v1/queries/%s/cancel', $queryJobId);
         return $this->sendRequest('POST', $url, $requestBody);
     }
@@ -222,7 +156,6 @@ class Client
      */
     public function getJobResults(string $queryJobId, string $statementId): array
     {
-        $this->verifyStorageApiToken();
         $url = sprintf('/api/v1/queries/%s/%s/results', $queryJobId, $statementId);
         return $this->sendRequest('GET', $url);
     }
@@ -235,14 +168,6 @@ class Client
     public function healthCheck(): array
     {
         return $this->sendRequest('GET', '/health-check');
-    }
-
-    /**
-     * Get the Storage API client instance
-     */
-    public function getStorageApiClient(): StorageApiClient
-    {
-        return $this->storageApiClient;
     }
 
     /**

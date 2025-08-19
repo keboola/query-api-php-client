@@ -22,7 +22,7 @@
         }
     },
     "require": {
-        "php": ">=7.4",
+        "php": "^8.4",
         "ext-json": "*",
         "guzzlehttp/guzzle": "~7.0",
         "keboola/storage-api-client": "^18.0",

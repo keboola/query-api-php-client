@@ -1,5 +1,7 @@
 FROM php:8.2
 
+ENV COMPOSER_ALLOW_SUPERUSER 1
+
 RUN apt-get update -q \
   && apt-get install git unzip \
   -y --no-install-recommends

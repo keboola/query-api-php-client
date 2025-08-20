@@ -1,0 +1,12 @@
+services:
+  dev:
+    image: keboola/query-api-php-client
+    build: .
+    volumes:
+      - ./:/code
+    working_dir: /code
+    command: bash
+    environment:
+      - TESTS_QUERY_API_URL
+      - TESTS_STORAGE_API_TOKEN
+      - TESTS_STORAGE_API_URL

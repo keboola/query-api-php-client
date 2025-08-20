@@ -158,30 +158,8 @@ abstract class BaseFunctionalTestCase extends TestCase
 
         // Wait for completion
         assert(is_string($response['queryJobId']));
-        $this->waitForJobCompletion($response['queryJobId']);
+        $this->queryClient->waitForJobCompletion($response['queryJobId']);
 
         return $tableName;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    protected function waitForJobCompletion(string $queryJobId, int $maxWaitSeconds = 30): array
-    {
-        $startTime = time();
-        $attempt = 1;
-
-        while (time() - $startTime < $maxWaitSeconds) {
-            $status = $this->queryClient->getJobStatus($queryJobId);
-            if (in_array($status['status'], ['completed', 'failed', 'canceled'], true)) {
-                return $status;
-            }
-            sleep(1);
-            $attempt++;
-        }
-
-        throw new RuntimeException(
-            sprintf('Job %s did not complete within %d seconds', $queryJobId, $maxWaitSeconds),
-        );
     }
 }

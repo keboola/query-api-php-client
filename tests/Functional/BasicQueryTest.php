@@ -24,7 +24,7 @@ class BasicQueryTest extends BaseFunctionalTestCase
         $this->assertNotEmpty($queryJobId);
 
         // Wait for job completion
-        $finalStatus = $this->waitForJobCompletion($queryJobId);
+        $finalStatus = $this->queryClient->waitForJobCompletion($queryJobId);
 
         $this->assertEquals('completed', $finalStatus['status']);
         $this->assertEquals($queryJobId, $finalStatus['queryJobId']);
@@ -80,7 +80,7 @@ class BasicQueryTest extends BaseFunctionalTestCase
         $this->assertNotEmpty($queryJobId);
 
         // Wait for job completion
-        $finalStatus = $this->waitForJobCompletion($queryJobId);
+        $finalStatus = $this->queryClient->waitForJobCompletion($queryJobId);
 
         $this->assertEquals('completed', $finalStatus['status']);
         $this->assertEquals($queryJobId, $finalStatus['queryJobId']);

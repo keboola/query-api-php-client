@@ -326,7 +326,7 @@ class Client
      * @param int $maxWaitSeconds Maximum time to wait in seconds
      * @return array<string, mixed>
      */
-    private function waitForJobCompletion(string $queryJobId, int $maxWaitSeconds = 30): array
+    public function waitForJobCompletion(string $queryJobId, int $maxWaitSeconds = 30): array
     {
         $startTime = time();
 

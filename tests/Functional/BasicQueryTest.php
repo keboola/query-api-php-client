@@ -113,4 +113,59 @@ class BasicQueryTest extends BaseFunctionalTestCase
         $this->assertIsNumeric($row[0]);
         $this->assertGreaterThanOrEqual(0, (int) $row[0]);
     }
+
+    public function testExecuteWorkspaceQuery(): void
+    {
+        // Test the new executeWorkspaceQuery method with a simple query
+        $response = $this->queryClient->executeWorkspaceQuery(
+            $this->getTestBranchId(),
+            $this->getTestWorkspaceId(),
+            [
+                'statements' => ['SELECT CURRENT_TIMESTAMP() AS "current_time"'],
+                'transactional' => false,
+            ],
+        );
+
+        // Verify the response structure
+        $this->assertArrayHasKey('queryJobId', $response);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertArrayHasKey('statements', $response);
+        $this->assertArrayHasKey('results', $response);
+
+        // Verify job completed successfully
+        $this->assertEquals('completed', $response['status']);
+        $this->assertNotEmpty($response['queryJobId']);
+
+        // Verify statements
+        $statements = $response['statements'];
+        assert(is_array($statements));
+        $this->assertCount(1, $statements);
+
+        $statement = $statements[0];
+        assert(is_array($statement));
+        $this->assertEquals('completed', $statement['status']);
+
+        // Verify results
+        $results = $response['results'];
+        assert(is_array($results));
+        $this->assertCount(1, $results);
+
+        $result = $results[0];
+        assert(is_array($result));
+        $this->assertEquals('completed', $result['status']);
+
+        // Verify we got timestamp data
+        $this->assertArrayHasKey('data', $result);
+        $data = $result['data'];
+        assert(is_array($data));
+        $this->assertCount(1, $data);
+        $row = $data[0];
+        assert(is_array($row));
+        $this->assertCount(1, $row);
+        // Query API returns indexed arrays, not associative arrays with column names
+        assert(isset($row[0]) && is_string($row[0]));
+        $this->assertNotEmpty($row[0]);
+        // Verify it's a valid timestamp (numeric string)
+        $this->assertMatchesRegularExpression('/^\d+\.\d+$/', $row[0]);
+    }
 }

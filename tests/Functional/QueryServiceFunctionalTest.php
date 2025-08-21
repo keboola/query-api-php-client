@@ -43,7 +43,7 @@ class QueryServiceFunctionalTest extends BaseFunctionalTestCase
         $this->assertNotEmpty($queryJobId);
 
         // Wait for job completion
-        $finalStatus = $this->waitForJobCompletion($queryJobId);
+        $finalStatus = $this->queryClient->waitForJobCompletion($queryJobId);
 
         $this->assertEquals('completed', $finalStatus['status']);
         $this->assertEquals($queryJobId, $finalStatus['queryJobId']);
@@ -97,7 +97,7 @@ class QueryServiceFunctionalTest extends BaseFunctionalTestCase
         assert(is_string($queryJobId));
 
         // Wait for completion
-        $finalStatus = $this->waitForJobCompletion($queryJobId);
+        $finalStatus = $this->queryClient->waitForJobCompletion($queryJobId);
 
         $this->assertEquals('completed', $finalStatus['status']);
         $this->assertArrayHasKey('statements', $finalStatus);
@@ -161,7 +161,7 @@ class QueryServiceFunctionalTest extends BaseFunctionalTestCase
         $this->assertEquals($queryJobId, $cancelResponse['queryJobId']);
 
         // Wait for final status
-        $finalStatus = $this->waitForJobCompletion($queryJobId, 15);
+        $finalStatus = $this->queryClient->waitForJobCompletion($queryJobId, 15);
 
         // Job should be canceled
         $this->assertEquals('canceled', $finalStatus['status']);
@@ -193,7 +193,7 @@ class QueryServiceFunctionalTest extends BaseFunctionalTestCase
         assert(is_string($queryJobId));
 
         // Wait for job completion
-        $finalStatus = $this->waitForJobCompletion($queryJobId);
+        $finalStatus = $this->queryClient->waitForJobCompletion($queryJobId);
 
         // Job should fail due to invalid SQL
         $this->assertEquals('failed', $finalStatus['status']);
@@ -241,7 +241,7 @@ class QueryServiceFunctionalTest extends BaseFunctionalTestCase
         assert(is_string($queryJobId));
 
         // Wait for job completion
-        $finalStatus = $this->waitForJobCompletion($queryJobId);
+        $finalStatus = $this->queryClient->waitForJobCompletion($queryJobId);
 
         // Query Service accepts invalid branch IDs and executes successfully
         $this->assertEquals('completed', $finalStatus['status']);

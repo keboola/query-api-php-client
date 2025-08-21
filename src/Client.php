@@ -181,6 +181,56 @@ class Client
     }
 
     /**
+     * Execute a workspace query and wait for results
+     *
+     * @param array{statements: string[], transactional?: bool} $requestBody
+     * @return array<string, mixed>
+     */
+    public function executeWorkspaceQuery(string $branchId, string $workspaceId, array $requestBody): array
+    {
+        // Submit the query job
+        $response = $this->submitQueryJob($branchId, $workspaceId, $requestBody);
+
+        if (!isset($response['queryJobId']) || !is_string($response['queryJobId'])) {
+            throw new ClientException('Invalid response from submitQueryJob: missing queryJobId');
+        }
+
+        $queryJobId = $response['queryJobId'];
+
+        // Wait for job completion
+        $finalStatus = $this->waitForJobCompletion($queryJobId);
+
+        if (!isset($finalStatus['status']) || $finalStatus['status'] !== 'completed') {
+            /** @var string $status */
+            $status = $finalStatus['status'] ?? 'unknown';
+            throw new ClientException(
+                sprintf('Query job failed with status: %s', $status),
+                $status === 'failed' ? 500 : 0,
+            );
+        }
+
+        // Get results for all completed statements
+        $results = [];
+        if (isset($finalStatus['statements']) && is_array($finalStatus['statements'])) {
+            foreach ($finalStatus['statements'] as $statement) {
+                if (is_array($statement) && isset($statement['id']) && isset($statement['status'])) {
+                    if ($statement['status'] === 'completed') {
+                        $statementResults = $this->getJobResults($queryJobId, $statement['id']);
+                        $results[] = $statementResults;
+                    }
+                }
+            }
+        }
+
+        return [
+            'queryJobId' => $queryJobId,
+            'status' => $finalStatus['status'],
+            'statements' => $finalStatus['statements'] ?? [],
+            'results' => $results,
+        ];
+    }
+
+    /**
      * Health check
      *
      * @return array<string, mixed>
@@ -268,5 +318,30 @@ class Client
         }
 
         throw new ClientException('Query Service API request failed: ' . $e->getMessage(), 0, $e);
+    }
+
+    /**
+     * Wait for job completion with timeout
+     *
+     * @param int $maxWaitSeconds Maximum time to wait in seconds
+     * @return array<string, mixed>
+     */
+    public function waitForJobCompletion(string $queryJobId, int $maxWaitSeconds = 30): array
+    {
+        $startTime = time();
+
+        while (time() - $startTime < $maxWaitSeconds) {
+            $status = $this->getJobStatus($queryJobId);
+
+            if (in_array($status['status'], ['completed', 'failed', 'canceled'], true)) {
+                return $status;
+            }
+
+            sleep(1);
+        }
+
+        throw new ClientException(
+            sprintf('Job %s did not complete within %d seconds', $queryJobId, $maxWaitSeconds),
+        );
     }
 }

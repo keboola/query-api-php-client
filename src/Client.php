@@ -201,8 +201,8 @@ class Client
         $finalStatus = $this->waitForJobCompletion($queryJobId);
 
         if (!isset($finalStatus['status']) || $finalStatus['status'] !== 'completed') {
+            /** @var string $status */
             $status = $finalStatus['status'] ?? 'unknown';
-            assert(is_string($status));
             throw new ClientException(
                 sprintf('Query job failed with status: %s', $status),
                 $status === 'failed' ? 500 : 0,

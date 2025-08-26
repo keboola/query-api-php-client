@@ -53,7 +53,8 @@ class BasicQueryTest extends BaseFunctionalTestCase
         assert(is_array($row));
         $this->assertCount(1, $row);
         // Query API returns indexed arrays, not associative arrays with column names
-        assert(isset($row[0]) && is_string($row[0]));
+        $this->assertArrayHasKey(0, $row);
+        $this->assertIsString($row[0]);
         $this->assertNotEmpty($row[0]);
         // Verify it's a valid timestamp (numeric string)
         $this->assertMatchesRegularExpression('/^\d+\.\d+$/', $row[0]);
@@ -163,7 +164,8 @@ class BasicQueryTest extends BaseFunctionalTestCase
         assert(is_array($row));
         $this->assertCount(1, $row);
         // Query API returns indexed arrays, not associative arrays with column names
-        assert(isset($row[0]) && is_string($row[0]));
+        $this->assertArrayHasKey(0, $row);
+        $this->assertIsString($row[0]);
         $this->assertNotEmpty($row[0]);
         // Verify it's a valid timestamp (numeric string)
         $this->assertMatchesRegularExpression('/^\d+\.\d+$/', $row[0]);

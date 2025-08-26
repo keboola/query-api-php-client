@@ -360,6 +360,7 @@ class Client
     {
         $startTime = time();
 
+        $tries = 0;
         while (time() - $startTime < $maxWaitSeconds) {
             $status = $this->getJobStatus($queryJobId);
 
@@ -367,7 +368,10 @@ class Client
                 return $status;
             }
 
-            sleep(1);
+            // 10, 20, 40, 80, 160, 320, 640, 1000ms (max)
+            $waitMilliseconds = min(pow(2, $tries)*10, 1000);
+            usleep($waitMilliseconds * 1000);
+            $tries++;
         }
 
         throw new ClientException(

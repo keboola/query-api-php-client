@@ -40,8 +40,8 @@ class ResultHelperTest extends TestCase
         $actual = ResultHelper::mapColumnNamesIntoData($input);
 
         // Columns should be preserved unchanged
-        $this->assertSame($expected['columns'], $actual['columns']);
+        self::assertSame($expected['columns'], $actual['columns']);
         // Data rows should be mapped by column names
-        $this->assertSame($expected['data'], $actual['data']);
+        self::assertSame($expected['data'], $actual['data']);
     }
 }

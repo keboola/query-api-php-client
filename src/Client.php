@@ -249,11 +249,13 @@ class Client
             }
         }
 
-        /** @phpstan-ignore-next-line */
+        /** @var array<array<string, mixed>> $statements */
+        $statements = $finalStatus['statements'] ?? [];
+
         return [
             'queryJobId' => $queryJobId,
             'status' => $finalStatus['status'],
-            'statements' => $finalStatus['statements'] ?? [],
+            'statements' => $statements,
             'results' => $results,
         ];
     }

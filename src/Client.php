@@ -368,8 +368,8 @@ class Client
                 return $status;
             }
 
-            // 10, 20, 40, 80, 160, 320, 640, 1000ms (max)
-            $waitMilliseconds = min(pow(2, $tries)*10, 1000);
+            // 60, 70, 90, 130, 210, 370, 690, 1000ms (max)
+            $waitMilliseconds = min(50+pow(2, $tries)*10, 1000);
             usleep($waitMilliseconds * 1000);
             $tries++;
         }

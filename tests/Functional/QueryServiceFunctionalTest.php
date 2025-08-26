@@ -205,7 +205,7 @@ class QueryServiceFunctionalTest extends BaseFunctionalTestCase
         // The statement remains in 'waiting' status because the job failed before execution
         $statement = $statements[0];
         assert(is_array($statement));
-        $this->assertEquals('completed', $statement['status']);
+        $this->assertEquals('failed', $statement['status']);
         assert(is_string($statement['query']));
         $this->assertEquals('SELECT * FROM non_existent_table_12345', $statement['query']);
     }

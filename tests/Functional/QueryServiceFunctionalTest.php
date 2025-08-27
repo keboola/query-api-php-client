@@ -202,7 +202,6 @@ class QueryServiceFunctionalTest extends BaseFunctionalTestCase
         assert(is_array($statements));
         $this->assertCount(1, $statements);
 
-        // The statement remains in 'waiting' status because the job failed before execution
         $statement = $statements[0];
         assert(is_array($statement));
         $this->assertEquals('failed', $statement['status']);

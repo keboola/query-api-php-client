@@ -127,22 +127,12 @@ class QueryServiceFunctionalTest extends BaseFunctionalTestCase
 
     public function testCancelQueryJob(): void
     {
-        // Create test table
-        $tableName = $this->createTestTable();
-
-        // Submit a cross join query that takes some time to process
         $response = $this->queryClient->submitQueryJob(
             $this->getTestBranchId(),
             $this->getTestWorkspaceId(),
             [
                 'statements' => [
-                    sprintf('
-                        SELECT a.id, b.id as id2, a.name, b.name as name2
-                        FROM %s a
-                        CROSS JOIN %s b
-                        CROSS JOIN %s c
-                        ORDER BY 1, 2
-                    ', $tableName, $tableName, $tableName),
+                    'CALL SYSTEM$WAIT(10);', // Wait for 10 seconds to allow time for cancellation
                 ],
                 'transactional' => false,
             ],

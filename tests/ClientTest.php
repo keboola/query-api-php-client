@@ -15,8 +15,8 @@ class ClientTest extends TestCase
 {
     public function testConstructorRequiresUrl(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('url must be set');
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('url must be set');
 
         new Client([
             'token' => 'test-token',
@@ -25,8 +25,8 @@ class ClientTest extends TestCase
 
     public function testConstructorRequiresToken(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('token must be set');
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('token must be set');
 
         new Client([
             'url' => 'https://test.keboola.com',
@@ -46,7 +46,7 @@ class ClientTest extends TestCase
             'transactional' => true,
         ]);
 
-        $this->assertEquals(['queryJobId' => 'job-12345'], $result);
+        self::assertEquals(['queryJobId' => 'job-12345'], $result);
     }
 
     public function testGetJobStatus(): void
@@ -63,8 +63,8 @@ class ClientTest extends TestCase
 
         $result = $client->getJobStatus('job-12345');
 
-        $this->assertEquals('job-12345', $result['queryJobId']);
-        $this->assertEquals('running', $result['status']);
+        self::assertEquals('job-12345', $result['queryJobId']);
+        self::assertEquals('running', $result['status']);
     }
 
     public function testCancelJob(): void
@@ -77,7 +77,7 @@ class ClientTest extends TestCase
 
         $result = $client->cancelJob('job-12345', ['reason' => 'User requested']);
 
-        $this->assertEquals(['queryJobId' => 'job-12345'], $result);
+        self::assertEquals(['queryJobId' => 'job-12345'], $result);
     }
 
     public function testGetJobResults(): void
@@ -94,10 +94,10 @@ class ClientTest extends TestCase
 
         $result = $client->getJobResults('job-12345', 'stmt-67890');
 
-        $this->assertEquals('completed', $result['status']);
-        $this->assertEquals(1, $result['rowsAffected']);
+        self::assertEquals('completed', $result['status']);
+        self::assertEquals(1, $result['rowsAffected']);
         assert(is_array($result['data']));
-        $this->assertCount(1, $result['data']);
+        self::assertCount(1, $result['data']);
     }
 
     public function testHealthCheck(): void
@@ -115,8 +115,8 @@ class ClientTest extends TestCase
 
         $result = $client->healthCheck();
 
-        $this->assertEquals('query', $result['service']);
-        $this->assertEquals('ok', $result['status']);
+        self::assertEquals('query', $result['service']);
+        self::assertEquals('ok', $result['status']);
     }
 
     public function testHealthCheckWithInvalidToken(): void
@@ -142,8 +142,8 @@ class ClientTest extends TestCase
         // Health check should succeed because no token is sent
         $result = $client->healthCheck();
 
-        $this->assertEquals('query', $result['service']);
-        $this->assertEquals('ok', $result['status']);
+        self::assertEquals('query', $result['service']);
+        self::assertEquals('ok', $result['status']);
     }
 
     private function createClientWithMockHandler(MockHandler $mockHandler): Client

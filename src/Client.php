@@ -18,10 +18,11 @@ use Throwable;
 
 class Client
 {
-    private const DEFAULT_USER_AGENT = 'Keboola Query API PHP Client';
-    private const DEFAULT_BACKOFF_RETRIES = 3;
-    private const GUZZLE_CONNECT_TIMEOUT_SECONDS = 10;
-    private const GUZZLE_TIMEOUT_SECONDS = 120;
+    private const string DEFAULT_USER_AGENT = 'Keboola Query API PHP Client';
+    private const int DEFAULT_BACKOFF_RETRIES = 3;
+    private const int GUZZLE_CONNECT_TIMEOUT_SECONDS = 10;
+    private const int GUZZLE_TIMEOUT_SECONDS = 120;
+    private const int DEFAULT_MAX_WAIT_SECONDS = 30;
 
     private string $apiUrl;
     private string $tokenString;
@@ -172,11 +173,20 @@ class Client
     /**
      * Get job results
      *
-     * @return array<string, mixed>
+     * @return array{
+     *      "columns": array<int, array{
+     *          "name": string,
+     *          "type": "text",
+     *      }>,
+     *      "data": array<array<int, string>>,
+     *      "status": string,
+     *      "rowsAffected": int
+     * }
      */
     public function getJobResults(string $queryJobId, string $statementId): array
     {
         $url = sprintf('/api/v1/queries/%s/%s/results', $queryJobId, $statementId);
+        /** @phpstan-ignore-next-line */
         return $this->sendRequest('GET', $url);
     }
 
@@ -184,10 +194,27 @@ class Client
      * Execute a workspace query and wait for results
      *
      * @param array{statements: string[], transactional?: bool} $requestBody
-     * @return array<string, mixed>
+     * @return array{
+     *     queryJobId: string,
+     *     status: string,
+     *     statements: array<array<string, mixed>>,
+     *     results: array{
+     *          "columns": array<array{
+     *              "name": string,
+     *              "type": "text",
+     *          }>,
+     *          "data": array<array<int, string>>,
+     *          "status": string,
+     *          "rowsAffected": int
+     *     }[],
+     * }
      */
-    public function executeWorkspaceQuery(string $branchId, string $workspaceId, array $requestBody): array
-    {
+    public function executeWorkspaceQuery(
+        string $branchId,
+        string $workspaceId,
+        array $requestBody,
+        int $maxWaitSeconds = self::DEFAULT_MAX_WAIT_SECONDS,
+    ): array {
         // Submit the query job
         $response = $this->submitQueryJob($branchId, $workspaceId, $requestBody);
 
@@ -198,7 +225,7 @@ class Client
         $queryJobId = $response['queryJobId'];
 
         // Wait for job completion
-        $finalStatus = $this->waitForJobCompletion($queryJobId);
+        $finalStatus = $this->waitForJobCompletion($queryJobId, $maxWaitSeconds);
 
         if (!isset($finalStatus['status']) || $finalStatus['status'] !== 'completed') {
             /** @var string $status */
@@ -222,10 +249,13 @@ class Client
             }
         }
 
+        /** @var array<array<string, mixed>> $statements */
+        $statements = $finalStatus['statements'] ?? [];
+
         return [
             'queryJobId' => $queryJobId,
             'status' => $finalStatus['status'],
-            'statements' => $finalStatus['statements'] ?? [],
+            'statements' => $statements,
             'results' => $results,
         ];
     }

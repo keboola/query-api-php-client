@@ -13,9 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Mark /code as safe for Git
-        run: git config --global --add safe.directory /code
-
       - name: Build development container
         run: docker compose build dev
 

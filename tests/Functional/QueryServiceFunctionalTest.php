@@ -216,36 +216,16 @@ class QueryServiceFunctionalTest extends BaseFunctionalTestCase
     public function testQueryJobWithInvalidBranch(): void
     {
         // Submit job with an invalid branch ID
+        $this->expectException(ClientException::class);
+        $this->expectExceptionMessage('Failed to get workspace credentials');
         $response = $this->queryClient->submitQueryJob(
-            'non-existent-branch-12345',
+            '1234567890',
             $this->getTestWorkspaceId(),
             [
             'statements' => ['SELECT 1'],
             'transactional' => false,
             ],
         );
-
-        self::assertArrayHasKey('queryJobId', $response);
-        $queryJobId = $response['queryJobId'];
-        assert(is_string($queryJobId));
-
-        // Wait for job completion
-        $finalStatus = $this->queryClient->waitForJobCompletion($queryJobId);
-
-        // Query Service accepts invalid branch IDs and executes successfully
-        self::assertEquals('completed', $finalStatus['status']);
-        self::assertArrayHasKey('statements', $finalStatus);
-        $statements = $finalStatus['statements'];
-        assert(is_array($statements));
-        self::assertCount(1, $statements);
-
-        $statement = $statements[0];
-        assert(is_array($statement));
-        self::assertEquals('completed', $statement['status']);
-        assert(is_string($statement['query']));
-        self::assertEquals('SELECT 1', $statement['query']);
-        assert(is_int($statement['rowsAffected']));
-        self::assertEquals(0, $statement['rowsAffected']);
     }
 
     public function testQueryJobWithInvalidWorkspace(): void

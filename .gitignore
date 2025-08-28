@@ -3,6 +3,7 @@
 
 # Environment files (contains sensitive information)
 .env
+.env.local
 
 # PHPUnit
 .phpunit.result.cache

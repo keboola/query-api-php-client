@@ -41,4 +41,28 @@ class ResultHelper
         $responseData['data'] = $transformedData;
         return $responseData;
     }
+
+    /**
+     * @param array<string, mixed> $responseData
+     */
+    public static function extractAllStatementErrors(array $responseData): string
+    {
+        $errors = [];
+        if (isset($responseData['statements']) && is_array($responseData['statements'])) {
+            foreach ($responseData['statements'] as $statement) {
+                if (is_array($statement) && isset($statement['error']) && is_string($statement['error'])) {
+                    $err = trim($statement['error']);
+                    if ($err !== '') {
+                        $errors[] = $err;
+                    }
+                }
+            }
+        }
+
+        if (!$errors) {
+            return 'Unknown error';
+        }
+
+        return implode("\n", $errors);
+    }
 }

@@ -8,17 +8,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      
+
       - name: Build development container
         run: docker compose build dev
-      
+
       - name: Install dependencies
         run: docker compose run --rm dev composer install
-      
+
       - name: Run tests and CI checks
         run: |
           docker compose run --rm \

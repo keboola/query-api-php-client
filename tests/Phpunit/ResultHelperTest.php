@@ -44,4 +44,48 @@ class ResultHelperTest extends TestCase
         // Data rows should be mapped by column names
         self::assertSame($expected['data'], $actual['data']);
     }
+
+    public function testExtractAllStatementErrorsSingle(): void
+    {
+        $responseData = [
+            'queryJobId' => '74001bf0-c79c-49f7-bad9-ef96db5ff28e',
+            'status' => 'failed',
+            'statements' => [
+                [
+                    'id' => 'b0065ce1-00d5-4723-8897-0c5a902ae446',
+                    'query' => 'SELECT 1',
+                    'status' => 'completed',
+                ],
+                [
+                    'id' => '4feb6663-c98c-401d-a875-5bb72438e2cc',
+                    'query' => 'SELECT * FROM Cooties',
+                    'status' => 'failed',
+                    'error' => 'COOTIES does not exist or not authorized',
+                ],
+                [
+                    'id' => '4feb6663-c98c-401d-a875-5bb72438e2cc',
+                    'query' => 'a spacey query',
+                    'status' => 'failed',
+                    'error' => '                  there is also a lot of space   ',
+                ],
+                [
+                    'id' => 'a57bc659-c9f7-45d4-a011-d6f10cc0e757',
+                    'query' => 'SELECT 2',
+                    'status' => 'notExecuted',
+                ],
+            ],
+        ];
+
+        $actual = ResultHelper::extractAllStatementErrors($responseData);
+        self::assertEquals(
+            "COOTIES does not exist or not authorized\nthere is also a lot of space",
+            $actual,
+        );
+    }
+
+    public function testExtractAllStatementErrorsInvalidArray(): void
+    {
+        $actual = ResultHelper::extractAllStatementErrors([]);
+        self::assertSame('Unknown error', $actual);
+    }
 }

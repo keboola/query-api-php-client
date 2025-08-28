@@ -22,7 +22,7 @@ class Client
     private const int DEFAULT_BACKOFF_RETRIES = 3;
     private const int GUZZLE_CONNECT_TIMEOUT_SECONDS = 10;
     private const int GUZZLE_TIMEOUT_SECONDS = 120;
-    private const int DEFAULT_MAX_WAIT_SECONDS = 30;
+    private const int DEFAULT_MAX_WAIT_SECONDS = 90;
 
     private string $apiUrl;
     private string $tokenString;
